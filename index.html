@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lost & Found</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-6">
+
+<!-- 🔔 Notification -->
+<div id="notif" class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded hidden"></div>
+
+<h1 class="text-3xl font-bold mb-4">🔍 Lost & Found</h1>
+
+<!-- 🔐 LOGIN -->
+<div class="bg-white p-4 rounded shadow mb-4">
+  <h2 class="text-xl mb-2">Login</h2>
+
+  <input id="email" placeholder="Email" class="border p-2 w-full mb-2">
+  <input id="password" placeholder="Password" type="password" class="border p-2 w-full mb-2">
+
+  <button onclick="login()" class="bg-blue-500 text-white px-4 py-2 rounded">
+    Login
+  </button>
+</div>
+
+<!-- 🧾 ADD ITEM -->
+<div class="bg-white p-4 rounded shadow mb-6">
+  <h2 class="text-xl mb-3">Add Item</h2>
+
+  <input id="title" placeholder="Title" class="border p-2 w-full mb-2">
+  <input id="desc" placeholder="Description" class="border p-2 w-full mb-2">
+  <input id="category" placeholder="Category" class="border p-2 w-full mb-2">
+
+  <select id="type" class="border p-2 w-full mb-2">
+    <option value="lost">Lost</option>
+    <option value="found">Found</option>
+  </select>
+
+  <input id="lat" placeholder="Latitude" class="border p-2 w-full mb-2">
+  <input id="lng" placeholder="Longitude" class="border p-2 w-full mb-2">
+
+  <button onclick="previewMap()" class="bg-gray-500 text-white px-2 py-1 rounded mb-2">
+    Preview Map
+  </button>
+
+  <input id="address" placeholder="Address" class="border p-2 w-full mb-2">
+
+  <button onclick="addItem()" class="bg-green-500 text-white px-4 py-2 rounded">
+    Add Item
+  </button>
+</div>
+
+<!-- 📦 ITEMS -->
+<button onclick="loadItems()" class="bg-blue-500 text-white px-4 py-2 rounded mb-4">
+  Load Items
+</button>
+
+<div id="list" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+
+<!-- 💬 CHAT BOX -->
+<div id="chatBox" class="fixed bottom-4 right-4 bg-white w-80 p-3 rounded shadow hidden">
+  <h3 class="font-bold mb-2">Chat</h3>
+
+  <div id="messages" class="h-40 overflow-y-auto border p-2 mb-2"></div>
+
+  <input id="chatInput" placeholder="Type message..." class="border p-2 w-full mb-2">
+
+  <button onclick="sendMessage()" class="bg-blue-500 text-white px-3 py-1 rounded">
+    Send
+  </button>
+</div>
+
+<script>
+
+let token = "";
+let currentItemId = "";
+
+// 🔔 Notification
+function showNotification(msg) {
+  notif.innerText = msg;
+  notif.classList.remove("hidden");
+  setTimeout(() => notif.classList.add("hidden"), 3000);
+}
+
+// 🔐 LOGIN
+async function login() {
+  const res = await fetch("http://localhost:5000/api/auth/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      email: email.value,
+      password: password.value
+    })
+  });
+
+  const data = await res.json();
+
+  token = data.token;
+  showNotification("✅ Logged in");
+}
+
+// ➕ ADD ITEM
+async function addItem() {
+  await fetch("http://localhost:5000/api/items", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      title: title.value,
+      description: desc.value,
+      category: category.value,
+      type: type.value,
+      lat: lat.value,
+      lng: lng.value,
+      address: address.value
+    })
+  });
+
+  showNotification("Item Added!");
+  loadItems();
+}
+
+// 📦 LOAD ITEMS
+async function loadItems() {
+  const res = await fetch("http://localhost:5000/api/items");
+  const data = await res.json();
+
+  list.innerHTML = "";
+
+  data.forEach(item => {
+    const div = document.createElement("div");
+
+    div.className = "bg-white p-3 rounded shadow";
+
+    div.innerHTML = `
+      <h3 class="font-bold">${item.title}</h3>
+      <p>${item.description}</p>
+
+      <button onclick="openMap(${item.location.lat}, ${item.location.lng})" class="bg-red-500 text-white px-2 py-1 mt-2 rounded">
+        Map
+      </button>
+
+      <button onclick="openChat('${item._id}')" class="bg-green-500 text-white px-2 py-1 mt-2 rounded">
+        Chat
+      </button>
+    `;
+
+    list.appendChild(div);
+  });
+}
+
+// 📍 MAP
+function previewMap() {
+  window.open(`https://www.google.com/maps?q=${lat.value},${lng.value}`);
+}
+
+function openMap(lat, lng) {
+  window.open(`https://www.google.com/maps?q=${lat},${lng}`);
+}
+
+// 💬 OPEN CHAT
+function openChat(id) {
+  currentItemId = id;
+  chatBox.classList.remove("hidden");
+  loadMessages();
+}
+
+// 💬 LOAD CHAT
+async function loadMessages() {
+  const res = await fetch(`http://localhost:5000/api/chat/${currentItemId}`);
+  const data = await res.json();
+
+  messages.innerHTML = "";
+
+  data.forEach(m => {
+    messages.innerHTML += `<div class="mb-1"><b>${m.sender}:</b> ${m.message}</div>`;
+  });
+}
+
+// 💬 SEND MESSAGE
+async function sendMessage() {
+  await fetch("http://localhost:5000/api/chat", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      itemId: currentItemId,
+      sender: "User",
+      message: chatInput.value
+    })
+  });
+
+  chatInput.value = "";
+  loadMessages();
+}
+
+</script>
+
+</body>
+</html>

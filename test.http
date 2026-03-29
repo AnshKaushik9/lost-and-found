@@ -1,0 +1,76 @@
+### CREATE LOST
+POST http://localhost:5000/api/items
+Content-Type: application/json
+
+{
+  "title": "Lost Wallet",
+  "description": "Black wallet",
+  "category": "wallet",
+  "type": "lost",
+  "lat": 28.6,
+  "lng": 77.2,
+  "address": "Delhi"
+}
+
+### CREATE FOUND
+POST http://localhost:5000/api/items
+Content-Type: application/json
+
+{
+  "title": "Found Wallet",
+  "description": "Wallet near gate",
+  "category": "wallet",
+  "type": "found",
+  "lat": 28.61,
+  "lng": 77.21,
+  "address": "Delhi"
+}
+
+### GET ALL ITEMS
+GET http://localhost:5000/api/items
+
+### UPDATE ITEM
+PUT http://localhost:5000/api/items/69c4035234b20a43b4f3f3d1
+Content-Type: application/json
+
+{
+  "title": "Updated Wallet",
+  "description": "Updated description"
+}
+
+### DELETE ITEM
+DELETE http://localhost:5000/api/items/69c4138ca46c8aa48bafdee7
+
+### MATCH ITEMS
+GET http://localhost:5000/api/items/match/69c4045034b20a43b4f3f3de
+
+### REGISTER
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@gmail.com",
+  "password": "123456"
+}
+
+### LOGIN
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@gmail.com",
+  "password": "123456"
+}
+
+### SEND MESSAGE
+POST http://localhost:5000/api/chat
+Content-Type: application/json
+
+{
+  "itemId": "69c4045034b20a43b4f3f3de",
+  "sender": "Ansh",
+  "message": "Bhai ye mera wallet hai kya?"
+}
+
+### GET CHAT
+GET http://localhost:5000/api/chat/69c4045034b20a43b4f3f3de

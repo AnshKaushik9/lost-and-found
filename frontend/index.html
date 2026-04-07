@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lost & Found – FinderForge</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+</head>
+<body>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ========== NAVBAR ========== -->
+<nav class="navbar" id="navbar" style="display:none">
+  <a class="nav-brand" href="#" onclick="showPage('home')">🔍 Lost<span>&Found</span></a>
+  <div class="nav-links">
+    <button class="nav-btn outline" onclick="showPage('home')">Home</button>
+    <button class="nav-btn outline" onclick="showPage('items')">Browse</button>
+    <button class="nav-btn outline" onclick="openPostModal()">+ Post Item</button>
+    <button class="nav-btn outline" onclick="showPage('profile')" id="navProfileBtn">My Posts</button>
+    <button class="nav-btn primary danger" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<!-- ========== AUTH PAGE ========== -->
+<div id="authPage">
+  <!-- LOGIN -->
+  <div class="auth-page" id="loginPage">
+    <div class="auth-card">
+      <div class="auth-logo">Lost<span>&Found</span></div>
+      <div class="auth-subtitle">FinderForge — Smart Item Recovery</div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="loginEmail" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="loginPassword" placeholder="Enter your password" />
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="login()">Sign In 🔐</button>
+      <div class="auth-switch">Don't have an account? <a href="#" onclick="toggleAuth()">Register here</a></div>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="auth-page" id="registerPage" style="display:none">
+    <div class="auth-card">
+      <div class="auth-logo">Lost<span>&Found</span></div>
+      <div class="auth-subtitle">Create your FinderForge account</div>
+
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-input" id="regName" placeholder="Your full name" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="regEmail" placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="regPassword" placeholder="Min 6 characters" />
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="register()">Create Account 🚀</button>
+      <div class="auth-switch">Already have an account? <a href="#" onclick="toggleAuth()">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div id="mainApp" style="display:none">
+
+  <!-- HOME PAGE -->
+  <div class="page active" id="homePage">
+    <div class="hero">
+      <div class="hero-badge">✨ FINDERFORGE PLATFORM</div>
+      <h1>Lost Something? <br><span>We'll Help You Find It.</span></h1>
+      <p>The smartest way to report lost items and connect with finders in your community.</p>
+      <div class="hero-btns">
+        <button class="btn btn-primary" onclick="openPostModal('lost')">🔴 Report Lost Item</button>
+        <button class="btn btn-outline" onclick="openPostModal('found')">🟢 Post Found Item</button>
+        <button class="btn btn-gold" onclick="showPage('items')">🔍 Browse All Items</button>
+      </div>
+    </div>
+
+    <div class="stats-bar" id="statsBar">
+      <div class="stat">
+        <div class="stat-num" id="statTotal">0</div>
+        <div class="stat-label">TOTAL ITEMS</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statLost">0</div>
+        <div class="stat-label">LOST ITEMS</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statFound">0</div>
+        <div class="stat-label">FOUND ITEMS</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statResolved">0</div>
+        <div class="stat-label">RESOLVED</div>
+      </div>
+    </div>
+
+    <div class="container section">
+      <div class="section-header">
+        <h2 class="section-title">Recent <span>Listings</span></h2>
+        <button class="btn btn-primary btn-sm" onclick="showPage('items')">View All →</button>
+      </div>
+      <div class="items-grid" id="recentItems">
+        <div class="loader"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BROWSE PAGE -->
+  <div class="page" id="itemsPage">
+    <div class="container section">
+      <div class="section-header">
+        <h2 class="section-title">Browse <span>Items</span></h2>
+        <button class="btn btn-primary btn-sm" onclick="openPostModal()">+ Post Item</button>
+      </div>
+
+      <div class="filters">
+        <div class="filter-tabs">
+          <button class="filter-tab active-all" onclick="setFilter('all', this)">All</button>
+          <button class="filter-tab" onclick="setFilter('lost', this)">🔴 Lost</button>
+          <button class="filter-tab" onclick="setFilter('found', this)">🟢 Found</button>
+        </div>
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search by title, location..." oninput="debounceSearch()" />
+        <select class="filter-select" id="categoryFilter" onchange="loadItems()">
+          <option value="">All Categories</option>
+          <option>Phone</option>
+          <option>Wallet</option>
+          <option>Keys</option>
+          <option>ID/Documents</option>
+          <option>Bag</option>
+          <option>Jewellery</option>
+          <option>Electronics</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="items-grid" id="allItems">
+        <div class="loader"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE PAGE -->
+  <div class="page" id="profilePage">
+    <div class="profile-header">
+      <div class="profile-avatar" id="profileAvatar">U</div>
+      <h2 id="profileName">User</h2>
+      <p style="color:var(--mid-gray);font-size:0.9rem" id="profileEmail"></p>
+    </div>
+    <div class="container section">
+      <div class="section-header">
+        <h2 class="section-title">My <span>Posts</span></h2>
+        <button class="btn btn-primary btn-sm" onclick="openPostModal()">+ New Post</button>
+      </div>
+      <div class="items-grid" id="myItems">
+        <div class="loader"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========== POST ITEM MODAL ========== -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📋 Post an Item</div>
+      <button class="modal-close" onclick="closeModal('postModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Item Type *</label>
+        <div class="type-select">
+          <div class="type-option" id="typeOptionLost" onclick="selectType('lost')">
+            <span class="type-option-icon">😟</span>
+            <div class="type-option-label" style="color:var(--danger)">Lost Item</div>
+          </div>
+          <div class="type-option" id="typeOptionFound" onclick="selectType('found')">
+            <span class="type-option-icon">😊</span>
+            <div class="type-option-label" style="color:var(--teal-dark)">Found Item</div>
+          </div>
+        </div>
+        <input type="hidden" id="selectedType" value="" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Title *</label>
+        <input type="text" class="form-input" id="postTitle" placeholder="e.g., Blue Samsung Phone" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select class="form-input" id="postCategory">
+            <option value="">Select Category</option>
+            <option>Phone</option>
+            <option>Wallet</option>
+            <option>Keys</option>
+            <option>ID/Documents</option>
+            <option>Bag</option>
+            <option>Jewellery</option>
+            <option>Electronics</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date *</label>
+          <input type="date" class="form-input" id="postDate" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Location *</label>
+        <input type="text" class="form-input" id="postLocation" placeholder="e.g., Central Park, New York" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <textarea class="form-input" id="postDescription" placeholder="Describe the item in detail..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contact Info</label>
+        <input type="text" class="form-input" id="postContact" placeholder="Phone or email for contact" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Item Photo</label>
+        <div class="file-upload" onclick="document.getElementById('postImage').click()">
+          <input type="file" id="postImage" accept="image/*" onchange="previewImage(this)" />
+          <div class="file-upload-icon">📷</div>
+          <div class="file-upload-text">Click to upload image (Max 5MB)</div>
+        </div>
+        <img id="imgPreview" class="img-preview" alt="Preview" />
+      </div>
+
+      <button class="btn btn-primary" style="width:100%" onclick="submitPost()">🚀 Submit Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ITEM DETAIL MODAL ========== -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="detailModalTitle">Item Details</div>
+      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    </div>
+    <div class="modal-body" id="detailModalBody"></div>
+  </div>
+</div>
+
+<!-- ========== CHAT MODAL ========== -->
+<div class="modal-overlay" id="chatModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="chatModalTitle">💬 Chat</div>
+        <div style="font-size:0.8rem;color:var(--mid-gray)" id="chatModalSub">Connected via Socket.IO</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('chatModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="chat-container">
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter') sendMessage()" />
+          <button class="chat-send-btn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MATCHES MODAL ========== -->
+<div class="modal-overlay" id="matchesModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🤖 Smart Matches Found!</div>
+      <button class="modal-close" onclick="closeModal('matchesModal')">✕</button>
+    </div>
+    <div class="modal-body" id="matchesModalBody"></div>
+  </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.1/socket.io.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

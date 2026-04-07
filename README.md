@@ -38,7 +38,6 @@ lost-and-found/
 ### ✅ Requirements
 - Node.js (v16+) → https://nodejs.org
 - MongoDB → https://www.mongodb.com/try/download/community
-- Any browser (Chrome recommended)
 
 ---
 
